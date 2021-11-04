@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os/exec"
 	"regexp"
+	"strings"
 
 	"github.com/hashicorp/go-version"
 )
@@ -30,6 +31,22 @@ func (h *Handler) GetState() map[int]Xinput {
 	return h.state
 }
 
+func (h *Handler) GetMasters() []Xinput {
+	stateSlice := stateToSlice(h.state)
+	return filterInputs(stateSlice, Master, "")
+}
+
+func (h *Handler) GetMasterByName(name string) (Xinput, Xinput, error) {
+	masters := h.GetMasters()
+	var matches []Xinput
+	for _, m := range masters {
+		if strings.Contains(m.Name, name) {
+			matches = append(matches, m)
+		}
+	}
+	return checkMaster(matches)
+}
+
 func (h *Handler) Reattach(inputs []Xinput, masterID int) error {
 	for _, i := range inputs {
 		if err := h.reattach(i.ID, masterID); err != nil {
@@ -47,25 +64,7 @@ func (h *Handler) CreateMaster(name string) (Xinput, Xinput, error) {
 	if err != nil {
 		return Xinput{}, Xinput{}, nil
 	}
-	if len(newMasters) != 2 {
-		return Xinput{}, Xinput{}, fmt.Errorf("expected 2 new master, got %d", len(newMasters))
-	}
-
-	keyboardMaster := newMasters[0]
-	pointerMaster := newMasters[1]
-
-	if keyboardMaster.Type != Keyboard {
-		keyboardMaster, pointerMaster = pointerMaster, keyboardMaster
-	}
-	if keyboardMaster.Type != Keyboard ||
-		pointerMaster.Type != Pointer {
-		return Xinput{}, Xinput{}, errors.New("new masters have invalid types")
-	}
-	if keyboardMaster.ID != pointerMaster.MasterID ||
-		pointerMaster.ID != keyboardMaster.MasterID {
-		return Xinput{}, Xinput{}, errors.New("new masters do not point to each other")
-	}
-	return keyboardMaster, pointerMaster, nil
+	return checkMaster(newMasters)
 }
 
 func (h *Handler) RemoveMaster(id int) error {
@@ -126,6 +125,36 @@ func filterInputs(inputs []Xinput, dRole DeviceRole, dType DeviceType) []Xinput 
 		matches = append(matches, i)
 	}
 	return matches
+}
+
+func checkMaster(masters []Xinput) (Xinput, Xinput, error) {
+	if len(masters) != 2 {
+		return Xinput{}, Xinput{}, fmt.Errorf("expected 2 new master, got %d", len(masters))
+	}
+
+	keyboardMaster := masters[0]
+	pointerMaster := masters[1]
+
+	if keyboardMaster.Type != Keyboard {
+		keyboardMaster, pointerMaster = pointerMaster, keyboardMaster
+	}
+	if keyboardMaster.Type != Keyboard ||
+		pointerMaster.Type != Pointer {
+		return Xinput{}, Xinput{}, errors.New("new masters have invalid types")
+	}
+	if keyboardMaster.ID != pointerMaster.MasterID ||
+		pointerMaster.ID != keyboardMaster.MasterID {
+		return Xinput{}, Xinput{}, errors.New("new masters do not point to each other")
+	}
+	return pointerMaster, keyboardMaster, nil
+}
+
+func stateToSlice(state map[int]Xinput) []Xinput {
+	v := make([]Xinput, 0, len(state))
+	for _, value := range state {
+		v = append(v, value)
+	}
+	return v
 }
 
 func checkXServerVersion() error {

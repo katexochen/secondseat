@@ -31,7 +31,7 @@ func runAdd(cmd *cobra.Command, args []string) error {
 }
 
 func add(cmd *cobra.Command, xiHandler xinput.Handler) error {
-	keyboardMaster, pointerMaster, err := xiHandler.CreateMaster(masterName)
+	pointerMaster, keyboardMaster, err := xiHandler.CreateMaster(masterName)
 	if err != nil {
 		return err
 	}

@@ -21,4 +21,5 @@ func init() {
 	rootCmd.SetOut(os.Stdout)
 	rootCmd.CompletionOptions.DisableNoDescFlag = true
 	rootCmd.AddCommand(newAddCmd())
+	rootCmd.AddCommand(newRemoveCmd())
 }
