@@ -3,8 +3,8 @@ module github.com/katexochen/secondseat
 go 1.17
 
 require (
-	github.com/hashicorp/go-version v1.3.0
-	github.com/spf13/cobra v1.2.1
+	github.com/hashicorp/go-version v1.6.0
+	github.com/spf13/cobra v1.5.0
 )
 
 require (
