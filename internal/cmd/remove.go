@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/katexochen/secondseat/xinput"
+	"github.com/katexochen/secondseat/internal/xinput"
 	"github.com/spf13/cobra"
 )
 

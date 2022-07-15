@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/katexochen/secondseat/cmd"
+	"github.com/katexochen/secondseat/internal/cmd"
 )
 
 func main() {
