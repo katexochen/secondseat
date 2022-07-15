@@ -51,13 +51,12 @@ func add(cmd *cobra.Command, handler xinput.Handler) error {
 	if err != nil {
 		return err
 	}
-	cmd.Println("\nThese devices will be attached to the second seat.")
 
 	newPrimaryPointer, newPrimaryKeyboard, err := handler.CreatePrimary(masterName)
 	if err != nil {
 		return err
 	}
-	cmd.Println("Successfully created a new primary device for second seat.")
+	cmd.Println("\nSuccessfully created a new primary device for second seat.")
 	if debugMode {
 		printDebug(cmd, "New PrimaryPointer created: %v\n", newPrimaryPointer)
 		printDebug(cmd, "New PrimaryKeyboard created: %v\n", newPrimaryKeyboard)
