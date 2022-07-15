@@ -38,6 +38,7 @@ Use "secondseat [command] --help" for more information about a command.
 ## Limitations
 
 - Curser flickering when moving the one of the pointers.
+- Sometimes the selection of windows doesn't work as expected.
 - Some applications don't support multiple pointers and won't differentiate between the different input devices. Applies to:
   - Firefox (Chromium works)
 
