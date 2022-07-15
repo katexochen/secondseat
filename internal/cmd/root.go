@@ -17,8 +17,8 @@ func Execute() error {
 }
 
 func init() {
+	cobra.EnableCommandSorting = false
 	rootCmd.SetOut(os.Stdout)
-	rootCmd.CompletionOptions.DisableNoDescFlag = true
 	rootCmd.AddCommand(newAddCmd())
 	rootCmd.AddCommand(newRemoveCmd())
 }
