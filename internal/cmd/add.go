@@ -15,7 +15,6 @@ func newAddCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "add",
 		Short: "Add input devices for a second user.",
-		Long:  "Add input devices for a second user.",
 		Args:  cobra.NoArgs,
 		RunE:  runAdd,
 	}
@@ -31,14 +30,14 @@ func runAdd(cmd *cobra.Command, args []string) error {
 }
 
 func add(cmd *cobra.Command, xiHandler xinput.Handler) error {
-	pointerMaster, keyboardMaster, err := xiHandler.CreateMaster(masterName)
+	pointerMaster, keyboardMaster, err := xiHandler.CreatePrimary(masterName)
 	if err != nil {
 		return err
 	}
 	fmt.Println(keyboardMaster)
-	fmt.Printf("ID: %d, mID: %d\n", keyboardMaster.ID, keyboardMaster.MasterID)
+	fmt.Printf("ID: %d, mID: %d\n", keyboardMaster.ID, keyboardMaster.PrimaryID)
 	fmt.Println(pointerMaster)
-	fmt.Printf("ID: %d, mID: %d\n", pointerMaster.ID, pointerMaster.MasterID)
+	fmt.Printf("ID: %d, mID: %d\n", pointerMaster.ID, pointerMaster.PrimaryID)
 	if err := addInput(cmd, xiHandler, pointerMaster.ID, xinput.Pointer); err != nil {
 		return err
 	}
@@ -61,7 +60,7 @@ func addInput(cmd *cobra.Command, xiHandler xinput.Handler, masterID int, device
 	if err := confirmWithEnter(cmd.InOrStdin()); err != nil {
 		return err
 	}
-	newInputs, err := xiHandler.DetectNewSlaves(deviceType)
+	newInputs, err := xiHandler.DetectNewSecondaries(deviceType)
 	if err != nil {
 		return err
 	}

@@ -9,7 +9,6 @@ func newRemoveCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "remove",
 		Short: "Remove second input user.",
-		Long:  "Remove second input user",
 		Args:  cobra.NoArgs,
 		RunE:  runRemove,
 	}
@@ -25,9 +24,9 @@ func runRemove(cmd *cobra.Command, args []string) error {
 }
 
 func remove(cmd *cobra.Command, xiHandler xinput.Handler) error {
-	pointerMaster, _, err := xiHandler.GetMasterByName(masterName)
+	pointerMaster, _, err := xiHandler.GetPrimariesByName(masterName)
 	if err != nil {
 		return err
 	}
-	return xiHandler.RemoveMaster(pointerMaster.ID)
+	return xiHandler.RemovePrimary(pointerMaster.ID)
 }

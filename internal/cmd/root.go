@@ -9,7 +9,6 @@ import (
 var rootCmd = &cobra.Command{
 	Use:          "secondseat",
 	Short:        "Add or remove input devices for a second seat.",
-	Long:         "Add or remove input devices for a second seat.",
 	SilenceUsage: true,
 }
 

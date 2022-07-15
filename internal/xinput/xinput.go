@@ -7,11 +7,11 @@ import (
 const requiredXVersion = "1.20"
 
 type Xinput struct {
-	Name     string
-	ID       int
-	Type     DeviceType
-	Role     DeviceRole
-	MasterID int
+	Name      string
+	ID        int
+	Type      DeviceType
+	Role      DeviceRole
+	PrimaryID int
 }
 
 type DeviceType string
@@ -35,16 +35,16 @@ func parseDeviceType(s string) (DeviceType, error) {
 type DeviceRole string
 
 const (
-	Master DeviceRole = "master"
-	Slave  DeviceRole = "slave"
+	Primary   DeviceRole = "master"
+	Secondary DeviceRole = "slave"
 )
 
 func parseDeviceRole(s string) (DeviceRole, error) {
 	switch {
 	case s == "master":
-		return Master, nil
+		return Primary, nil
 	case s == "slave":
-		return Slave, nil
+		return Secondary, nil
 	default:
 		return "", fmt.Errorf("unknown device role %s", s)
 	}

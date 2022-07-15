@@ -31,63 +31,63 @@ func (h *Handler) GetState() map[int]Xinput {
 	return h.state
 }
 
-func (h *Handler) GetMasters() []Xinput {
+func (h *Handler) GetPrimaries() []Xinput {
 	stateSlice := stateToSlice(h.state)
-	return filterInputs(stateSlice, Master, "")
+	return filterInputs(stateSlice, Primary, "")
 }
 
-func (h *Handler) GetMasterByName(name string) (Xinput, Xinput, error) {
-	masters := h.GetMasters()
+func (h *Handler) GetPrimariesByName(name string) (Xinput, Xinput, error) {
+	primaries := h.GetPrimaries()
 	var matches []Xinput
-	for _, m := range masters {
+	for _, m := range primaries {
 		if strings.Contains(m.Name, name) {
 			matches = append(matches, m)
 		}
 	}
-	return checkMaster(matches)
+	return checkPrimary(matches)
 }
 
-func (h *Handler) Reattach(inputs []Xinput, masterID int) error {
+func (h *Handler) Reattach(inputs []Xinput, primaryID int) error {
 	for _, i := range inputs {
-		if err := h.reattach(i.ID, masterID); err != nil {
+		if err := h.reattach(i.ID, primaryID); err != nil {
 			return err
 		}
 	}
 	return h.UpdateState()
 }
 
-func (h *Handler) CreateMaster(name string) (Xinput, Xinput, error) {
-	if err := h.createMaster(name); err != nil {
+func (h *Handler) CreatePrimary(name string) (Xinput, Xinput, error) {
+	if err := h.createPrimary(name); err != nil {
 		return Xinput{}, Xinput{}, err
 	}
-	newMasters, err := h.DetectNewMasters()
+	newPrimaries, err := h.DetectNewPrimaries()
 	if err != nil {
 		return Xinput{}, Xinput{}, nil
 	}
-	return checkMaster(newMasters)
+	return checkPrimary(newPrimaries)
 }
 
-func (h *Handler) RemoveMaster(id int) error {
-	if err := h.removeMaster(id); err != nil {
+func (h *Handler) RemovePrimary(id int) error {
+	if err := h.removePrimary(id); err != nil {
 		return err
 	}
 	return h.UpdateState()
 }
 
-func (h *Handler) DetectNewMasters() ([]Xinput, error) {
+func (h *Handler) DetectNewPrimaries() ([]Xinput, error) {
 	newEntries, err := h.detectNew()
 	if err != nil {
 		return nil, err
 	}
-	return filterInputs(newEntries, Master, ""), nil
+	return filterInputs(newEntries, Primary, ""), nil
 }
 
-func (h *Handler) DetectNewSlaves(dType DeviceType) ([]Xinput, error) {
+func (h *Handler) DetectNewSecondaries(dType DeviceType) ([]Xinput, error) {
 	newEntries, err := h.detectNew()
 	if err != nil {
 		return nil, err
 	}
-	return filterInputs(newEntries, Slave, dType), nil
+	return filterInputs(newEntries, Secondary, dType), nil
 }
 
 func (h *Handler) UpdateState() error {
@@ -127,26 +127,26 @@ func filterInputs(inputs []Xinput, dRole DeviceRole, dType DeviceType) []Xinput 
 	return matches
 }
 
-func checkMaster(masters []Xinput) (Xinput, Xinput, error) {
-	if len(masters) != 2 {
-		return Xinput{}, Xinput{}, fmt.Errorf("expected 2 new master, got %d", len(masters))
+func checkPrimary(primary []Xinput) (Xinput, Xinput, error) {
+	if len(primary) != 2 {
+		return Xinput{}, Xinput{}, fmt.Errorf("expected 2 new primary inputs, got %d", len(primary))
 	}
 
-	keyboardMaster := masters[0]
-	pointerMaster := masters[1]
+	keyboardPrimary := primary[0]
+	pointerPrimary := primary[1]
 
-	if keyboardMaster.Type != Keyboard {
-		keyboardMaster, pointerMaster = pointerMaster, keyboardMaster
+	if keyboardPrimary.Type != Keyboard {
+		keyboardPrimary, pointerPrimary = pointerPrimary, keyboardPrimary
 	}
-	if keyboardMaster.Type != Keyboard ||
-		pointerMaster.Type != Pointer {
-		return Xinput{}, Xinput{}, errors.New("new masters have invalid types")
+	if keyboardPrimary.Type != Keyboard ||
+		pointerPrimary.Type != Pointer {
+		return Xinput{}, Xinput{}, errors.New("new primary inputs have invalid types")
 	}
-	if keyboardMaster.ID != pointerMaster.MasterID ||
-		pointerMaster.ID != keyboardMaster.MasterID {
-		return Xinput{}, Xinput{}, errors.New("new masters do not point to each other")
+	if keyboardPrimary.ID != pointerPrimary.PrimaryID ||
+		pointerPrimary.ID != keyboardPrimary.PrimaryID {
+		return Xinput{}, Xinput{}, errors.New("new primary inputs do not point to each other")
 	}
-	return pointerMaster, keyboardMaster, nil
+	return pointerPrimary, keyboardPrimary, nil
 }
 
 func stateToSlice(state map[int]Xinput) []Xinput {

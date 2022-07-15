@@ -8,6 +8,14 @@ import (
 	"strconv"
 )
 
+// listRegx parses the output of xinput list.
+// Group 1: Name
+// Group 2: ID
+// Group 3: DeviceRole
+// Group 4: DeviceType
+// Group 5: PrimaryID
+var listRegx = regexp.MustCompile(`(?:[⎡⎜⎣↳ ]+)(\S+(?: \S+)*)(?:\s*id=)(\d+)(?:\s\[)(\w+)(?: +)(\w+)(?: +\()(\d+)`)
+
 // list wraps 'xinput list' command
 func (h *Handler) list() (map[int]Xinput, error) {
 	cmder := h.newCommander()
@@ -20,20 +28,10 @@ func (h *Handler) list() (map[int]Xinput, error) {
 	if err != nil {
 		return nil, err
 	}
-	// Group 1: Name
-	// Group 2: ID
-	// Group 3: DeviceRole
-	// Group 4: DeviceType
-	// Group 5: MasterID
-	reg, err := regexp.Compile(`(?:[⎡⎜⎣↳ ]+)(\S+(?: \S+)*)(?:\s*id=)(\d+)(?:\s\[)(\w+)(?: +)(\w+)(?: +\()(\d+)`)
-	if err != nil {
-		return nil, err
-	}
-	matches := reg.FindAllStringSubmatch(string(out), -1)
 
+	matches := listRegx.FindAllStringSubmatch(string(out), -1)
 	result := make(map[int]Xinput)
 	for _, match := range matches {
-
 		for i, group := range match {
 			if len(group) == 0 {
 				return nil, fmt.Errorf("regex capturing group %d is empty", i)
@@ -51,28 +49,28 @@ func (h *Handler) list() (map[int]Xinput, error) {
 		if err != nil {
 			return nil, err
 		}
-		masterID, err := strconv.Atoi(match[5])
+		primaryID, err := strconv.Atoi(match[5])
 		if err != nil {
 			return nil, err
 		}
 		result[id] = Xinput{
-			Name:     match[1],
-			ID:       id,
-			Type:     device,
-			Role:     role,
-			MasterID: masterID,
+			Name:      match[1],
+			ID:        id,
+			Type:      device,
+			Role:      role,
+			PrimaryID: primaryID,
 		}
 	}
 	return result, nil
 }
 
 // reattach wraps 'xinput reattach' command.
-func (h *Handler) reattach(inputID, masterID int) error {
-	fmt.Printf("reattaching %d to %d\n", inputID, masterID)
+func (h *Handler) reattach(inputID, primaryID int) error {
+	fmt.Printf("reattaching %d to %d\n", inputID, primaryID)
 	var cmdArgs []string
 	cmdArgs = append(cmdArgs, "reattach")
 	cmdArgs = append(cmdArgs, strconv.Itoa(inputID))
-	cmdArgs = append(cmdArgs, strconv.Itoa(masterID))
+	cmdArgs = append(cmdArgs, strconv.Itoa(primaryID))
 	cmder := h.newCommander()
 	cmder.Command("xinput", cmdArgs...)
 	_, err := cmder.Output()
@@ -83,8 +81,8 @@ func (h *Handler) reattach(inputID, masterID int) error {
 	return err
 }
 
-// createMaster wraps 'xinput create-master' command.
-func (h *Handler) createMaster(name string) error {
+// createPrimary wraps 'xinput create-master' command.
+func (h *Handler) createPrimary(name string) error {
 	var cmdArgs []string
 	cmdArgs = append(cmdArgs, "create-master")
 	cmdArgs = append(cmdArgs, name)
@@ -98,11 +96,11 @@ func (h *Handler) createMaster(name string) error {
 	return err
 }
 
-// removeMaster wraps 'xinput remove-master' command.
+// removePrimary wraps 'xinput remove-master' command.
 //
-// Removing a master pointer will also remove the master keyboard
+// Removing a primary pointer will also remove the primary keyboard
 // it is pointing to and viceversa.
-func (h *Handler) removeMaster(id int) error {
+func (h *Handler) removePrimary(id int) error {
 	var cmdArgs []string
 	cmdArgs = append(cmdArgs, "remove-master")
 	cmdArgs = append(cmdArgs, strconv.Itoa(id))
