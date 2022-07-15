@@ -66,7 +66,6 @@ func (h *Handler) list() (map[int]Xinput, error) {
 
 // reattach wraps 'xinput reattach' command.
 func (h *Handler) reattach(inputID, primaryID int) error {
-	fmt.Printf("reattaching %d to %d\n", inputID, primaryID)
 	var cmdArgs []string
 	cmdArgs = append(cmdArgs, "reattach")
 	cmdArgs = append(cmdArgs, strconv.Itoa(inputID))

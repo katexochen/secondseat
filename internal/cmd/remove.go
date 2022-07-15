@@ -8,7 +8,7 @@ import (
 func newRemoveCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "remove",
-		Short: "Remove second input user.",
+		Short: "Remove second input user",
 		Args:  cobra.NoArgs,
 		RunE:  runRemove,
 	}
@@ -16,17 +16,24 @@ func newRemoveCmd() *cobra.Command {
 }
 
 func runRemove(cmd *cobra.Command, args []string) error {
-	xiHandler, err := xinput.NewHandler()
+	handler, err := xinput.NewHandler()
 	if err != nil {
 		return err
 	}
-	return remove(cmd, xiHandler)
+
+	err = remove(cmd, handler)
+	if err != nil {
+		return err
+	}
+
+	cmd.Println("Second seat successfully removed.")
+	return nil
 }
 
-func remove(cmd *cobra.Command, xiHandler xinput.Handler) error {
-	pointerMaster, _, err := xiHandler.GetPrimariesByName(masterName)
+func remove(cmd *cobra.Command, handler xinput.Handler) error {
+	pointerMaster, _, err := handler.GetPrimariesByName(masterName)
 	if err != nil {
 		return err
 	}
-	return xiHandler.RemovePrimary(pointerMaster.ID)
+	return handler.RemovePrimary(pointerMaster.ID)
 }
